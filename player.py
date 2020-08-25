@@ -36,13 +36,15 @@ class Player:
 
         self.position += roll
 
+        # if config.verbose['move']:
+        logger.info('Player {id} moved on board from position {old_position} to {new_position}'.format(
+                id=self.id, old_position=old_position, new_position=self.position))
+
+        go_amount = 20
         if self.position >= 40:
             self.position -= 40
-            self.cash += 200
-
-        if config.verbose['move']:
-            logger.info('Player {id} moved on board from position {old_position} to {new_position}'.format(
-                id=self.id, old_position=old_position, new_position=self.position))
+            self.cash += go_amount
+            logger.info(f'Player passed Go and collected ${go_amount}')
 
     def visit_property(self, property_):
         """
@@ -75,8 +77,8 @@ class Player:
             self.cash -= payment
             recipient.cash += payment
 
-        if config.verbose['pay']:
-            logger.info('Player {id} paid ${payment} to {recipient}'.format(
+        # if config.verbose['pay']:
+        logger.info('Player {id} paid ${payment} to {recipient}'.format(
                 id=self.id, payment=payment, recipient=recipient.id))
 
     def buy_property(self, property_):
@@ -89,13 +91,16 @@ class Player:
 
         self.count_monopolies()
 
-        if config.verbose['buy']:
-            logger.info('Player {id} paid ${price} to buy property {property} from the bank'.format(
+        # if config.verbose['buy']:
+        logger.info('Player {id} paid ${price} to buy property {property} from the bank'.format(
                 id=self.id, price=property_.price, property=property_.name))
 
     def count_monopolies(self):
         monopolies = dict()
         for p in self.properties:
+            if p.monopoly in self.monopolies:
+                continue
+
             if p.monopoly in monopolies:
                 monopolies[p.monopoly] -= 1
             else:
@@ -104,7 +109,8 @@ class Player:
             if monopolies[p.monopoly] == 0 :
                 self.owns_monopoly = True
                 self.monopolies.append(p.monopoly)
-        
+                logger.info(f'Player {self.id} now has a monopoly on {p.monopoly}')
+
         return len(self.monopolies)
 
     def buy_building(self):

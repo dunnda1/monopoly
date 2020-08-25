@@ -6,6 +6,7 @@ import spaces
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def main(max_rounds=10):
@@ -26,7 +27,7 @@ def main(max_rounds=10):
             g.pass_dice()
 
             # Continue until turn ends
-            while True:
+            while g.players_remaining > 1:
 
                 # Skip turn if player is bankrupt
                 if turn_player.bankrupt:
@@ -65,12 +66,21 @@ def main(max_rounds=10):
                 #     turn_player.buy_building()
 
                 # End turn
-                break
+                # TODO Must be a better way to handle this.   Original was "while true" but
+                #      then if (w/2 players) player one goes bankrupt player will still take their turn,
+                #      which is pretty dumb 
+                g.update()
+                break            
 
-        if g.round == max_rounds:
+        if (g.round == max_rounds) and (g.players_remaining > 1):
+            logger.info(f'Game suffered from problem so often bemoned by those who hate Monopoly.  After {max_rounds} there still is no winner.')            
             break
+
+    
+
 
 
 if __name__ == '__main__':
 
-    main()
+
+    main(max_rounds=1000)

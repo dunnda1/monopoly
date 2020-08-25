@@ -34,7 +34,7 @@ class Game:
         :param int n_players: Number of players in game
         """
 
-        # Ensure number of players requested is legal
+        # # Ensure number of players requested is legal
         if (n_players < 2) or (8 < n_players):
             raise ValueError('A game must have between 2 to 8 players. You input {} players.'.format(n_players))
 
@@ -87,8 +87,14 @@ class Game:
 
     def update_round(self):
 
+        
         self.round += 1
+        
+        # if config.verbose['round']:
+        logger.info('Starting round {round}...'.format(round=self.round))
 
-        if config.verbose['round']:
-            logger.info('\n')
-            logger.info('Starting round {round}...'.format(round=self.round))
+    def update(self):
+        self.players_remaining = len(self.players)
+        for p in self.players:
+            if p.bankrupt:
+                self.players_remaining -= 1
