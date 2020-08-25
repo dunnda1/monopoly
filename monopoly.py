@@ -8,7 +8,7 @@ import spaces
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 
-def main():
+def main(max_rounds=10):
 
     # Initialize game
     g = game.Game()
@@ -61,13 +61,13 @@ def main():
                     turn_player.visit_property(space)
 
                 # If a player owns monopolies
-                if turn_player.owns_monopoly:
-                    turn_player.buy_building()
+                # if turn_player.owns_monopoly:
+                #     turn_player.buy_building()
 
                 # End turn
                 break
 
-        if g.round == 10:
+        if g.round == max_rounds:
             break
 
 

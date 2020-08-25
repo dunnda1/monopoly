@@ -21,6 +21,10 @@ class Player:
         self.jail_cards = 0    # Number of "Get Out Of Jail Free" cards
         self.jail_turns = 0    # Number of remaining turns in jail
         self.bankrupt = False  # Bankrupt status
+        self.owns_monopoly = False
+        self.monopolies = list()
+        
+
 
     def move(self, roll):
         """
@@ -90,11 +94,23 @@ class Player:
                 id=self.id, price=property_.price, property=property_.name))
 
     def count_monopolies(self):
-        self.properties
+        monopolies = dict()
+        for p in self.properties:
+            if p.monopoly in monopolies:
+                monopolies[p.monopoly] -= 1
+            else:
+                monopolies[p.monopoly] = p.monopoly_size - 1
+            
+            if monopolies[p.monopoly] == 0 :
+                self.owns_monopoly = True
+                self.monopolies.append(p.monopoly)
+        
+        return len(self.monopolies)
 
     def buy_building(self):
         """Buy any building that can be legally bought."""
-        for m in self.monopolies:
+        logger.warning('attemp to call \'buy_buildings\' which has not been implmeted')
+        # for m in self.monopolies:
 
 
     def go_to_jail(self):
