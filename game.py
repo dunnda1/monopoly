@@ -1,6 +1,7 @@
 import logging
 
 import pandas as pd
+import numpy as np
 
 import bank
 import config
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 class Game:
     """Keeps track of all game pieces."""
 
-    def __init__(self):
+    def __init__(self, max_rounds=10):
 
         self.round = 0
         self.players = None
@@ -23,10 +24,22 @@ class Game:
         self.board = []
         self.dice = None
         self.players_remaining = None
+        self.max_rounds = max_rounds
 
         self.get_players(config.n_players)
         self.get_bank()
         self.get_board(config.board_filename)
+
+        # pandas df for player info per round
+        # self.playerSeries = pd.DataFrame(index = range(0,max_rounds)+1, columns=['CASH', 'NUM_PROPERTIES', 'NUM_MONOPOLIES', 'NUM_BUILDINGS', 'BANKRUPT'])
+        init_data= np.empty((max_rounds,3*config.n_players))
+        init_data[:]=np.NaN
+        
+        self.playerDF = pd.DataFrame(init_data, index=range(1,max_rounds+1), columns=[f'PLAYER_{n}_CASH' for n in range(1,config.n_players+1)]+[f'PLAYER_{n}_PROPERTIES' for n in range(1,config.n_players+1)]+[f'PLAYER_{n}_MONOPOLIES' for n in range(1,config.n_players+1)])
+        
+        # pandas df for property info (number times visited, total rent, etc)
+        self.propertyStats = None
+
 
     def get_players(self, n_players):
         """
@@ -96,5 +109,8 @@ class Game:
     def update(self):
         self.players_remaining = len(self.players)
         for p in self.players:
+            self.playerDF.loc[self.round][f'PLAYER_{p.id}_CASH'] = p.cash
+            self.playerDF.loc[self.round][f'PLAYER_{p.id}_PROPERTIES'] = len(p.properties)
+            self.playerDF.loc[self.round][f'PLAYER_{p.id}_MONOPOLIES'] = len(p.monopolies)
             if p.bankrupt:
                 self.players_remaining -= 1

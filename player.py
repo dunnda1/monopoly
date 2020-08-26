@@ -1,8 +1,10 @@
 import logging
+import random
+import numpy as np
 
 import bank
 import config
-
+import spaces
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +42,7 @@ class Player:
         logger.info('Player {id} moved on board from position {old_position} to {new_position}'.format(
                 id=self.id, old_position=old_position, new_position=self.position))
 
-        go_amount = 20
+        go_amount = 200
         if self.position >= 40:
             self.position -= 40
             self.cash += go_amount
@@ -51,6 +53,9 @@ class Player:
         Visit a property and act accordingly. Currently, a player always tries to buy the property if it is unowned.
         :param Property property_: Property object
         """
+
+        allow_auctions = False
+        allow_forgo_purchase = True
 
         is_owned = property_.owner is not None
         is_unmortgaged = not property_.mortgage
@@ -64,7 +69,16 @@ class Player:
                 self.go_bankrupt(creditor=property_.owner)
 
         elif not is_owned and can_afford_purchase:
-            self.buy_property(property_)
+            if allow_forgo_purchase:
+                if np.random.randint(0,2) == 1:
+                    self.buy_property(property_)
+                    # logger.info(f'Player {self.id} purchased {property_.name}')
+                else:
+                    logger.info(f'Player {self.id} declined to purchase {property_.name}')
+            else:
+                    self.buy_property(property_)
+                    # logger.info(f'Player {self.id} purchased {property_.name}')
+                
 
     def pay(self, payment, recipient):
         """
@@ -107,6 +121,7 @@ class Player:
                 monopolies[p.monopoly] = p.monopoly_size - 1
             
             if monopolies[p.monopoly] == 0 :
+                # TODO update rent on monopoly
                 self.owns_monopoly = True
                 self.monopolies.append(p.monopoly)
                 logger.info(f'Player {self.id} now has a monopoly on {p.monopoly}')
@@ -115,8 +130,41 @@ class Player:
 
     def buy_building(self):
         """Buy any building that can be legally bought."""
-        logger.warning('attemp to call \'buy_buildings\' which has not been implmeted')
-        # for m in self.monopolies:
+        # logger.warning('attemp to call \'buy_buildings\' which has not been implmeted')
+        
+        # get list of properties for which player could buy a building
+        purchase_options = list()
+        for p in self.properties:    
+            if (p.monopoly in self.monopolies) and isinstance(p,spaces.Street) and (p.build_cost <= self.cash):
+                # TODO: Need better check on number of buildings
+                if p.n_buildings < 5:
+                    purchase_options.append(p)        
+
+        # randomly select a property on which to put building
+        # TODO Need better purchase strategy
+        if len(purchase_options) > 0:
+            p = purchase_options[random.randint(0,len(purchase_options)-1)]
+            p.n_buildings += 1
+            self.cash -= p.build_cost
+            if p.n_buildings == 1:
+                p.rent_now = p.rent_house_1
+            elif p.n_buildings == 2:
+                p.rent_now = p.rent_house_2
+            elif p.n_buildings == 3:
+                p.rent_now = p.rent_house_3
+            elif p.n_buildings == 4:
+                p.rent_now = p.rent_house_4
+            elif p.n_buildings == 5:
+                p.rent_now = p.rent_hotel 
+
+            if p.n_buildings == 5:
+                building_type = 'hotel'
+            else:
+                building_type = 'house'   
+
+            logger.info(f'Player {self.id} purchased {building_type} for {p.name}.  Rent is now ${p.rent_now}')
+        
+
 
 
     def go_to_jail(self):

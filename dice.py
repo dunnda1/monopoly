@@ -26,4 +26,4 @@ class Dice:
         self.double_counter += self.double
 
         # if config.verbose['dice']:
-        logger.info('Roll a {die_1} and a {die_2}'.format(die_1=roll[0], die_2=roll[1]))
+        # logger.info('Roll a {die_1} and a {die_2}'.format(die_1=roll[0], die_2=roll[1]))

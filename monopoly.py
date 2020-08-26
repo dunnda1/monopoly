@@ -3,16 +3,18 @@ import sys
 
 import game
 import spaces
+import config
 
+import matplotlib.pyplot as plt
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def main(max_rounds=10):
+def main():
 
     # Initialize game
-    g = game.Game()
+    g = game.Game(max_rounds=1000)
 
     # Play as long as more than 1 player remains in game
     while g.players_remaining > 1:
@@ -61,9 +63,9 @@ def main(max_rounds=10):
                 elif isinstance(space, spaces.Property):
                     turn_player.visit_property(space)
 
-                # If a player owns monopolies
-                # if turn_player.owns_monopoly:
-                #     turn_player.buy_building()
+                # If a player owns 
+                if turn_player.owns_monopoly:
+                    turn_player.buy_building()
 
                 # End turn
                 # TODO Must be a better way to handle this.   Original was "while true" but
@@ -72,15 +74,34 @@ def main(max_rounds=10):
                 g.update()
                 break            
 
-        if (g.round == max_rounds) and (g.players_remaining > 1):
-            logger.info(f'Game suffered from problem so often bemoned by those who hate Monopoly.  After {max_rounds} there still is no winner.')            
+        if (g.round == g.max_rounds) and (g.players_remaining > 1):
+            logger.info(f'Game suffered from problem so often bemoned by those who hate Monopoly.  After {g.max_rounds} there still is no winner.')            
             break
 
-    
+    g.playerDF.dropna(inplace=True)        
+    print(g.playerDF)
 
+    n_players = len(g.players)
+
+    # plt.figure()
+
+
+    f, ax = plt.subplots(3,1,sharex='all')
+
+    g.playerDF.plot(ax=ax[0], y=[f'PLAYER_{n}_CASH' for n in range(1,n_players+1)])
+    # plt.savefig('player_cash.png')    
+
+    # plt.figure()
+    g.playerDF.plot(ax=ax[1], y=[f'PLAYER_{n}_PROPERTIES' for n in range(1,n_players+1)])
+    # plt.savefig('player_prop.png')    
+
+    # plt.figure()
+    g.playerDF.plot(ax=ax[2], y=[f'PLAYER_{n}_MONOPOLIES' for n in range(1,n_players+1)])
+    plt.savefig('player.png')    
+ 
 
 
 if __name__ == '__main__':
 
 
-    main(max_rounds=1000)
+    main()
